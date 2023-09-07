@@ -90,7 +90,7 @@ class _MyChatState extends State<MyChat> {
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: sendMessageInChat, // Call the sendMessage function
+                  onPressed: sendMessageInChat,
                 ),
               ],
             ),

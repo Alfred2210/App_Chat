@@ -85,13 +85,11 @@ class FirebaseHelper {
         "ISREAD": false,
       };
 
-      // Ajoutez le message au document Firestore.
       await newMessageRef.set(messageData);
 
       return messageId;
     } catch (error) {
       print("Erreur lors de l'envoi du message : $error");
-      // Gérez les erreurs ici.
       throw error;
     }
   }
@@ -110,7 +108,6 @@ class FirebaseHelper {
 
       List<Message> messages = [];
 
-      // Parcourez les documents de la requête pour créer des objets Message.
       querySnapshot.docs.forEach((doc) {
         messages.add(Message.bdd(doc));
       });
