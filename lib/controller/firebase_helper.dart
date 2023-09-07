@@ -5,9 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firstbd233/model/my_user.dart';
 
+import '../model/message.dart';
+
 class FirebaseHelper {
   final auth = FirebaseAuth.instance;
   final cloud_users = FirebaseFirestore.instance.collection("UTILISATEURS");
+  final cloud_messages = FirebaseFirestore.instance.collection("message");
   final storage = FirebaseStorage.instance;
 
 
@@ -58,4 +61,66 @@ class FirebaseHelper {
     String url = await snapshot.ref.getDownloadURL();
     return url;
   }
+
+
+
+
+  sendMessage(String idFrom, String idTo, String messageText) async {
+    try {
+      // Créez une référence à la collection "messages" dans Firestore.
+      final CollectionReference messagesCollection = FirebaseFirestore.instance.collection("message");
+
+      // Créez un nouveau document dans la collection "messages".
+      final DocumentReference newMessageRef = messagesCollection.doc();
+
+      // Obtenez l'ID unique du nouveau document créé.
+      final String messageId = newMessageRef.id;
+
+      // Créez un objet Message avec les données du message.
+      final Map<String, dynamic> messageData = {
+        "IDFROM": idFrom,
+        "IDTO": idTo,
+        "MESSAGE": messageText,
+        "DATE": DateTime.now(),
+        "ISREAD": false,
+      };
+
+      // Ajoutez le message au document Firestore.
+      await newMessageRef.set(messageData);
+
+      return messageId;
+    } catch (error) {
+      print("Erreur lors de l'envoi du message : $error");
+      // Gérez les erreurs ici.
+      throw error;
+    }
+  }
+
+  Future<List<Message>> getChatMessages(String idFrom, String idTo) async {
+    try {
+      // Créez une référence à la collection "messages" dans Firestore.
+      final CollectionReference messagesCollection = FirebaseFirestore.instance.collection("message");
+
+      // Effectuez une requête pour récupérer les messages entre les utilisateurs spécifiés.
+      QuerySnapshot querySnapshot = await messagesCollection
+          .where("IDFROM", isEqualTo: idFrom)
+          .where("IDTO", isEqualTo: idTo)
+          .orderBy("DATE", descending: false) // Vous pouvez trier par date si nécessaire.
+          .get();
+
+      List<Message> messages = [];
+
+      // Parcourez les documents de la requête pour créer des objets Message.
+      querySnapshot.docs.forEach((doc) {
+        messages.add(Message.bdd(doc));
+      });
+
+      return messages;
+    } catch (error) {
+      print("Erreur lors de la récupération des messages de chat : $error");
+      // Gérez les erreurs ici.
+      throw error;
+    }
+  }
+
 }

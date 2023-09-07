@@ -5,6 +5,8 @@ import 'package:firstbd233/model/my_user.dart';
 import 'package:firstbd233/view/info_personne.dart';
 import 'package:flutter/material.dart';
 
+import 'my_chat.dart';
+
 class ListPersonne extends StatefulWidget {
   const ListPersonne({super.key});
 
@@ -24,52 +26,65 @@ class _ListPersonneState extends State<ListPersonne> {
             List documents = snap.data!.docs;
 
             return ListView.builder(
-              itemCount: documents.length,
+                itemCount: documents.length,
                 itemBuilder: (context,index){
-                MyUser users = MyUser.bdd(documents[index]);
-                if(users.uid == moi.uid){
-                  return Container();
-                }
-                else
-                  {
-                return Card(
-                  elevation: 5,
-                  color: Colors.purple,
-                    child: ListTile(
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>MyInfoPersonne(personne: users)));
-                      },
-                      
-                      leading: CircleAvatar(
-                        radius: 20,
-                        backgroundImage: NetworkImage(users.avatar!),
-                      ),
-                      title: Text(users.fullName),
-                      subtitle: Text(users.email),
-                      trailing: IconButton(
-                        onPressed: (){
-                          setState(() {
-                            if(moi.favoris!.contains(users.uid)){
-                              moi.favoris!.remove(users.uid);
-                            }
-                            else
-                              {
-                                moi.favoris!.add(users.uid);
-                              }
-                            Map<String,dynamic> map = {
-                              "FAVORIS":moi.favoris
-                            };
-                            FirebaseHelper().updateUser(moi.uid, map);
-                          });
-                        },
-                        icon: const Icon(Icons.favorite),
-                        color: moi.favoris!.contains(users.uid)?Colors.red:Colors.grey,
-                      ),
-                    ),
-
-                );
+                  MyUser users = MyUser.bdd(documents[index]);
+                  if(users.uid == moi.uid){
+                    return Container();
                   }
-              }
+                  else
+                  {
+                    return Card(
+                        elevation: 5,
+                        color: Colors.purple,
+                        child: ListTile(
+                        onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>MyInfoPersonne(personne: users)));
+                    },
+
+                  leading: CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(users.avatar!),
+                  ),
+                  title: Text(users.fullName),
+                  subtitle: Text(users.email),
+                  trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                  IconButton(
+                  onPressed: () {
+                  setState(() {
+                  if (moi.favoris!.contains(users.uid)) {
+                  moi.favoris!.remove(users.uid);
+                  } else {
+                  moi.favoris!.add(users.uid);
+                  }
+                  Map<String, dynamic> map = {"FAVORIS": moi.favoris};
+                  FirebaseHelper().updateUser(moi.uid, map);
+                  });
+                  },
+                  icon: const Icon(Icons.favorite),
+                  color: moi.favoris!.contains(users.uid) ? Colors.red : Colors.grey,
+                  ),
+                  IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyChat(idTo: users.uid)
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.chat),
+                  color: Colors.red,
+                  ),
+                  ],
+                  ),
+                  ),
+
+                  );
+                }
+                }
             );
           }
         }
