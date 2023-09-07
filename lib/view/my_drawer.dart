@@ -3,8 +3,11 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:firstbd233/constante/constant.dart';
 import 'package:firstbd233/controller/firebase_helper.dart';
+import 'package:firstbd233/controller/paiement_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:get/get.dart';
 
 class MyDrawer extends StatefulWidget {
   const MyDrawer({super.key});
@@ -19,6 +22,8 @@ class _MyDrawerState extends State<MyDrawer> {
     //variable
     String? nameFile;
     Uint8List? bytesFile;
+
+
 
     //fonctions
     pickPhoto(){
@@ -86,7 +91,9 @@ class _MyDrawerState extends State<MyDrawer> {
 
 
           //nom et prénom
-          Text("Bonjour ${moi.fullName}",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),)
+          Text("Bonjour ${moi.fullName}",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+
+
 
 
         ],

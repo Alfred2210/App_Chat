@@ -15,25 +15,23 @@ class _MyCarteState extends State<MyCarte> {
   Widget build(BuildContext context) {
     return FutureBuilder<Position>(
         future: PermissionGPS().init(),
-        builder: (context,resultat){
-
-          if(resultat.data == null){
-            return Center(
-              child: Text("Vous n'avez pas accès à la carte"),
+        builder: (context,resultat) {
+          if (resultat.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator.adaptive(),
             );
           }
-          else
-            {
-              if(resultat.connectionState == ConnectionState.waiting){
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              else {
-                Position coordonne = resultat.data!;
-                return MyDataMaps(coordonnee: coordonne,);
-              }
+          else {
+            if (resultat.data == null) {
+              return Center(
+                child: Text("Vous n'avez pas accès à la carte"),
+              );
             }
+            else {
+              Position coordonne = resultat.data!;
+              return MyDataMaps(coordonnee: coordonne,);
+            }
+          }
         }
     );
   }

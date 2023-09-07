@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firstbd233/constante/constant.dart';
 import 'package:firstbd233/controller/firebase_helper.dart';
 import 'package:firstbd233/model/my_user.dart';
+import 'package:firstbd233/view/info_personne.dart';
 import 'package:flutter/material.dart';
 
 class ListPersonne extends StatefulWidget {
@@ -20,24 +22,54 @@ class _ListPersonneState extends State<ListPersonne> {
             return Center(child: Text("Aucun utilisateur"),);
           }else {
             List documents = snap.data!.docs;
+
             return ListView.builder(
               itemCount: documents.length,
                 itemBuilder: (context,index){
                 MyUser users = MyUser.bdd(documents[index]);
+                if(users.uid == moi.uid){
+                  return Container();
+                }
+                else
+                  {
                 return Card(
                   elevation: 5,
                   color: Colors.purple,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundImage: NetworkImage(users.avatar!),
+                    child: ListTile(
+                      onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>MyInfoPersonne(personne: users)));
+                      },
+                      
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundImage: NetworkImage(users.avatar!),
+                      ),
+                      title: Text(users.fullName),
+                      subtitle: Text(users.email),
+                      trailing: IconButton(
+                        onPressed: (){
+                          setState(() {
+                            if(moi.favoris!.contains(users.uid)){
+                              moi.favoris!.remove(users.uid);
+                            }
+                            else
+                              {
+                                moi.favoris!.add(users.uid);
+                              }
+                            Map<String,dynamic> map = {
+                              "FAVORIS":moi.favoris
+                            };
+                            FirebaseHelper().updateUser(moi.uid, map);
+                          });
+                        },
+                        icon: const Icon(Icons.favorite),
+                        color: moi.favoris!.contains(users.uid)?Colors.red:Colors.grey,
+                      ),
                     ),
-                    title: Text(users.fullName),
-                    subtitle: Text(users.email),
-                    trailing: Icon(Icons.favorite),
-                  ),
+
                 );
-                }
+                  }
+              }
             );
           }
         }

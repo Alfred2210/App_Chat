@@ -25,7 +25,7 @@ class _MyAnimationWidgetState extends State<MyAnimationWidget> with SingleTicker
     CurvedAnimation animationCurved = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
 
     animationOffset = Tween<Offset>(
-      begin: Offset(5, 5),
+      begin: Offset(0, 5),
       end: Offset.zero,
     ).animate(animationCurved);
 

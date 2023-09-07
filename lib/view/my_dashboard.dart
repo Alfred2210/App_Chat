@@ -1,8 +1,13 @@
+import 'package:firstbd233/constante/constant.dart';
+import 'package:firstbd233/controller/paiement_controller.dart';
+import 'package:firstbd233/view/listFavoris.dart';
 import 'package:firstbd233/view/liste_personne.dart';
+import 'package:firstbd233/view/machine_learnig.dart';
 import 'package:firstbd233/view/my_background.dart';
 import 'package:firstbd233/view/my_carte.dart';
 import 'package:firstbd233/view/my_drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class MyDashBord extends StatefulWidget {
   const MyDashBord({super.key});
@@ -14,8 +19,10 @@ class MyDashBord extends StatefulWidget {
 class _MyDashBordState extends State<MyDashBord> {
   //variable
   int indexPage = 0;
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       drawer: Container(
         color: Colors.purple,
@@ -24,9 +31,12 @@ class _MyDashBordState extends State<MyDashBord> {
         child: MyDrawer(),
       ),
       appBar: AppBar(
+        foregroundColor: Colors.white,
         elevation: 0,
         backgroundColor: Colors.transparent,
+
       ),
+
       extendBodyBehindAppBar: true,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: indexPage,
@@ -36,6 +46,7 @@ class _MyDashBordState extends State<MyDashBord> {
           });
 
         },
+        type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
@@ -48,6 +59,10 @@ class _MyDashBordState extends State<MyDashBord> {
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
               label: "Favoris"
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.rocket),
+              label: "ML"
           ),
 
         ],
@@ -65,7 +80,8 @@ class _MyDashBordState extends State<MyDashBord> {
     switch(indexPage){
       case 0 : return MyCarte();
       case 1 : return ListPersonne();
-      case 2 : return Center(child: Text("Afficher favoris"));
+      case 2 : return ListFavoris();
+      case 3 : return MyMachineLearning();
       default : return Text("Erreur");
     }
   }

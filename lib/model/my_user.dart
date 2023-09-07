@@ -9,6 +9,7 @@ class MyUser {
   String? avatar;
   DateTime? birthday;
   late Genre genre;
+  List? favoris;
 
 
   MyUser(){
@@ -35,6 +36,8 @@ class MyUser {
       {
         birthday = timestamp.toDate();
       }
+    favoris = map["FAVORIS"] ?? [];
+
   }
 
   //méthode
