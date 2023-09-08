@@ -100,7 +100,7 @@ class _MyChatPageState extends State<MyChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat with ${widget.chatGroupId}'),
+        title: Text('Chat Page'),
       ),
       body: Column(
         children: [
