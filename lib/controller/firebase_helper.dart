@@ -63,61 +63,52 @@ class FirebaseHelper {
   }
 
 
-
-
-  sendMessage(String idFrom, String idTo, String messageText) async {
-    try {
-      // Créez une référence à la collection "messages" dans Firestore.
-      final CollectionReference messagesCollection = FirebaseFirestore.instance.collection("message");
-
-      // Créez un nouveau document dans la collection "messages".
-      final DocumentReference newMessageRef = messagesCollection.doc();
-
-      // Obtenez l'ID unique du nouveau document créé.
-      final String messageId = newMessageRef.id;
-
-      // Créez un objet Message avec les données du message.
-      final Map<String, dynamic> messageData = {
-        "IDFROM": idFrom,
-        "IDTO": idTo,
-        "MESSAGE": messageText,
-        "DATE": DateTime.now(),
-        "ISREAD": false,
-      };
-
-      await newMessageRef.set(messageData);
-
-      return messageId;
-    } catch (error) {
-      print("Erreur lors de l'envoi du message : $error");
-      throw error;
-    }
+  List<Message> _messageListFromSnapshot(QuerySnapshot<Map<String, dynamic>> snapshot) {
+    return snapshot.docs.map((doc) {
+      return _messageFromSnapshot(doc);
+    }).toList();
   }
 
-  Future<List<Message>> getChatMessages(String idFrom, String idTo) async {
-    try {
-      // Créez une référence à la collection "messages" dans Firestore.
-      final CollectionReference messagesCollection = FirebaseFirestore.instance.collection("message");
+  Message _messageFromSnapshot(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    var data = snapshot.data();
+    if (data == null) throw Exception("message not found");
+    return Message.fromMap(data);
+  }
 
-      // Effectuez une requête pour récupérer les messages entre les utilisateurs spécifiés.
-      QuerySnapshot querySnapshot = await messagesCollection
-          .where("IDFROM", isEqualTo: idFrom)
-          .where("IDTO", isEqualTo: idTo)
-          .orderBy("DATE", descending: false) // Vous pouvez trier par date si nécessaire.
-          .get();
+  Stream<List<Message>> getMessage(String groupChatId, int limit) {
+    return FirebaseFirestore.instance
 
-      List<Message> messages = [];
-
-      querySnapshot.docs.forEach((doc) {
-        messages.add(Message.bdd(doc));
-      });
+        .collection('message')
+        .doc(groupChatId)
+        .collection(groupChatId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      // Convert the snapshot to a list of messages
+      List<Message> messages = snapshot.docs.map((doc) {
+        return _messageFromSnapshot(doc);
+      }).toList();
+      print("groupe : $groupChatId");
+      // Sort the messages by timestamp (newest first)
+      messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       return messages;
-    } catch (error) {
-      print("Erreur lors de la récupération des messages de chat : $error");
-      // Gérez les erreurs ici.
-      throw error;
-    }
+    });
   }
+
+
+  void onSendMessage(String groupChatId, Message message) {
+    var documentReference = FirebaseFirestore.instance
+        .collection('message')
+        .doc(groupChatId)
+        .collection(groupChatId)
+        .doc(DateTime.now().millisecondsSinceEpoch.toString());
+
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      transaction.set(documentReference,message.toHashMap());
+    });
+  }
+
+
 
 }

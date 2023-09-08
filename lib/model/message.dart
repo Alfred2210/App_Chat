@@ -1,46 +1,36 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Message {
-  late String idFrom;
-  late String idTo;
-  late String message;
-  late DateTime date;
-  late bool isRead;
+  final String idFrom;
+  final String idTo;
+  final String timestamp;
+  final String content;
 
+  // type: 0 = text, 1 = image
+  final int type;
 
-  Message(){
-    idFrom = "";
-    idTo = "";
-    message = "";
-    date = DateTime.now();
-    isRead = false;
-  }
+  Message(
+      {required this.idFrom,
+        required this.idTo,
+        required this.timestamp,
+        required this.content,
+        required this.type});
 
-  Message.bdd(DocumentSnapshot snapshot){
-    Map<String,dynamic> map = snapshot.data() as Map<String,dynamic>;
-    idFrom = map["IDFROM"];
-    idTo = map["IDTO"];
-    message = map["MESSAGE"];
-    Timestamp? timestamp = map["DATE"];
-    if(timestamp == null){
-      date = DateTime.now();
-    }
-    else
-    {
-      date = timestamp.toDate();
-    }
-    isRead = map["ISREAD"];
-  }
-
-  Map<String,dynamic> toMap(){
-    Map<String,dynamic> map = {
-      "IDFROM": idFrom,
-      "IDTO": idTo,
-      "MESSAGE": message,
-      "DATE": date,
-      "ISREAD": isRead
+  Map<String, dynamic> toHashMap() {
+    return {
+      'idFrom': idFrom,
+      'idTo': idTo,
+      'timestamp': timestamp,
+      'content': content,
+      'type': type
     };
-    return map;
   }
 
+  factory Message.fromMap(Map<String, dynamic> data){
+    return Message(
+        idFrom: data['idFrom'],
+        idTo: data['idTo'],
+        timestamp: data['timestamp'],
+        content: data['content'],
+        type: data['type']
+    );
+  }
 }

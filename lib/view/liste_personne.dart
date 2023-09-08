@@ -71,7 +71,10 @@ class _ListPersonneState extends State<ListPersonne> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MyChat(idTo: users.uid)
+                        builder: (context) => MyChatPage(
+                          userId: moi.uid,
+                          chatGroupId: moi.uid + users.uid,
+                        ),
                       ),
                     );
                   },

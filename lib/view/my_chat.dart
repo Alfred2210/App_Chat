@@ -1,102 +1,128 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firstbd233/controller/firebase_helper.dart'; // Import your FirebaseHelper class
 import 'package:firstbd233/model/message.dart';
 
-import '../controller/firebase_helper.dart'; // Importez votre classe Message
+import 'message_view.dart'; // Import your Message model
 
-class MyChat extends StatefulWidget {
-  final String idTo;
-  const MyChat({Key? key, required this.idTo}) : super(key: key);
+class MyChatPage extends StatefulWidget {
+  final String userId;
+  final String chatGroupId;
 
+  MyChatPage({required this.userId, required this.chatGroupId});
 
   @override
-  State<MyChat> createState() => _MyChatState();
+  _MyChatPageState createState() => _MyChatPageState();
 }
 
-class _MyChatState extends State<MyChat> {
-  final FirebaseHelper firebaseHelper = FirebaseHelper();
-  final TextEditingController _textController = TextEditingController();
-
-  // Function to send a message
-  void sendMessageInChat() async {
-    String messageText = _textController.text.trim();
-    print("messageText: $messageText");
-
-    if (messageText.isNotEmpty) {
-      // Create a new Message object
-      Message message = Message();
-      message.idFrom = FirebaseAuth.instance.currentUser!.uid; // Set the sender ID
-      message.idTo = widget.idTo;
-      message.message = messageText; // Set the message content
-      message.date = DateTime.now(); // Set the date
-      message.isRead = false; // Set isRead to false
-
-      print("Sending message: ${message.toMap()}");
-
-      // Send the message to Firebase
-      await firebaseHelper.sendMessage(message.idFrom, message.idTo, message.message);
-
-      // Clear the text field
-      _textController.clear();
-    }
-  }
-
+class _MyChatPageState extends State<MyChatPage> {
+  TextEditingController messageController = TextEditingController();
+  List<Message> messages = [];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: Text("${widget.idTo}")
-      ),
-      body: Column(
+  void initState() {
+    super.initState();
+    // Load previous chat messages when the chat page is initialized
+    _loadChatMessages();
+  }
+
+  void _loadChatMessages() async {
+    int LIMIT = 20; // Change this as needed
+
+    List<Message> chatMessages = await FirebaseHelper()
+        .getMessage(widget.chatGroupId, LIMIT)
+        .first;
+    try {
+      print("Chat messages loaded : ${chatMessages.length} messages"
+          " from ${widget.chatGroupId} to ${widget.userId}");
+    } catch (e) {
+      print("Error loading chat messages : $e");
+    }
+
+    setState(() {
+      messages.addAll(chatMessages.reversed);
+    });
+  }
+
+  Widget _buildMessageInputField() {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Row(
         children: [
           Expanded(
-            child: FutureBuilder<List<Message>>(
-              future: firebaseHelper.getChatMessages(
-                  FirebaseAuth.instance.currentUser!.uid, widget.idTo),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Text("No messages yet."),
-                  );
-                } else {
-                  List<Message> messages = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      Message message = messages[index];
-                      return ListTile(
-                        title: Text(message.message),
-                      );
-                    },
-                  );
-                }
-              },
+            child: TextField(
+              controller: messageController,
+              decoration: InputDecoration(
+                hintText: 'Type a message...',
+              ),
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration.collapsed(hintText: 'Send a message'),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: sendMessageInChat,
-                ),
-              ],
-            ),
+          IconButton(
+            icon: Icon(Icons.send),
+            onPressed: () {
+              _sendMessage();
+            },
           ),
         ],
       ),
     );
   }
+
+  void _sendMessage() {
+    String text = messageController.text.trim();
+    if (text.isNotEmpty) {
+      Message newMessage = Message(
+        idFrom: widget.userId,
+        idTo: widget.chatGroupId,
+        timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
+        content: text,
+        type: 0, // This is a text message, you can change it as needed
+      );
+
+      // Send the message to Firebase using your FirebaseHelper's method
+      FirebaseHelper().onSendMessage(widget.chatGroupId, newMessage);
+
+      print("Message sent : " + newMessage.content);
+      print("${newMessage.idFrom} sent a message to ${newMessage.idTo}");
+      print("idFrom : ${widget.userId}");
+      print("idTo : ${widget.chatGroupId}");
+      setState(() {
+        messages.add(newMessage);
+      });
+
+
+
+      messageController.clear();
+    }
+  }
+
+  @override
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat with ${widget.chatGroupId}'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              reverse: true,
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                Message message = messages[index];
+                return MessageItem(
+                  message: message,
+                  userId: widget.userId,
+
+                );
+              },
+            ),
+          ),
+          _buildMessageInputField(),
+        ],
+      ),
+    );
+  }
+
 }
+
